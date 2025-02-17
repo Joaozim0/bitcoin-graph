@@ -4,17 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IPTV Player</title>
-    <script src="iptv.js" defer></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/video.js@7.8.4/dist/video-js.css">
     <style>
-        body { font-family: Arial, sans-serif; }
-        #video-container { text-align: center; }
+        body { font-family: Arial, sans-serif; background-color: #f0f0f0; }
+        #video-container { text-align: center; margin-top: 20px; }
         video { max-width: 100%; height: auto; }
     </style>
 </head>
 <body>
-    <h1>Player IPTV</h1>
+    <h1>IPTV Player - TV ao Vivo e Conteúdos Sob Demanda</h1>
     <div id="video-container">
-        <video id="iptv-player" controls></video>
+        <video id="iptv-player" class="video-js vjs-default-skin" controls></video>
     </div>
+
+    <div id="content">
+        <h2>Escolha o Canal ou Conteúdo</h2>
+        <button onclick="loadChannel('http://komprao24.com:80/get.php?username=599120567&password=q657e8834t&type=m3u_plus')">Canal 1</button>
+        <button onclick="loadChannel('URL_DO_CANAL_2')">Canal 2</button>
+        <button onclick="loadChannel('URL_DE_CONTEUDO_SOB_DEMANDA')">Conteúdo Sob Demanda</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/video.js@7.8.4/dist/video.min.js"></script>
+    <script>
+        var player = videojs('iptv-player');
+
+        function loadChannel(url) {
+            player.src({ type: 'application/x-mpegURL', src: url });
+            player.play();
+        }
+
+        // Carregar o primeiro canal ou conteúdo automaticamente
+        loadChannel('http://komprao24.com:80/get.php?username=599120567&password=q657e8834t&type=m3u_plus');
+    </script>
 </body>
 </html>
