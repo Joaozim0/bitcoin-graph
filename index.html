@@ -163,15 +163,15 @@
             bitcoinChart.data.datasets[1].data.push(null); // Remove a queda
           }
         } else {
+          bitcoinChart.data.datasets[2].data.push(currentPrice); // Estabilidade inicialmente
           bitcoinChart.data.datasets[0].data.push(null);
           bitcoinChart.data.datasets[1].data.push(null);
-          bitcoinChart.data.datasets[2].data.push(currentPrice);
         }
 
         previousPrice = currentPrice;
         bitcoinChart.update();
         updateLoading(false);
-        startCountdown(30);
+        startCountdown(30); // Ajuste aqui para o intervalo entre atualizações
       } catch (error) {
         console.error('Erro ao buscar o preço do Bitcoin:', error);
         updateLoading(false);
@@ -240,6 +240,3 @@
   </script>
 </body>
 </html>
-```
-
-Fique à vontade para copiar e colar esse código no seu editor de HTML. Se precisar de mais alguma coisa,
