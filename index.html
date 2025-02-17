@@ -19,15 +19,29 @@
       margin-top: 10px;
       color: #ffc107;
     }
+    #priceInfo {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    .price-up {
+      color: #0f0;
+    }
+    .price-down {
+      color: #f00;
+    }
   </style>
 </head>
 <body>
   <h2>Preço do Bitcoin em Tempo Real</h2>
+  <div id="priceInfo">Carregando informações...</div>
   <div id="countdown">Próxima atualização em: 30s</div>
   <canvas id="bitcoinChart"></canvas>
 
   <script>
     const ctx = document.getElementById('bitcoinChart').getContext('2d');
+    let previousPrice = null;
+    let sevenDaysAgoPrice = null;
+
     const bitcoinChart = new Chart(ctx, {
       type: 'line',
       data: {
@@ -51,9 +65,7 @@
             color: '#fff'
           },
           legend: {
-            labels: {
-              color: '#fff'
-            }
+            labels: { color: '#fff' }
           }
         },
         scales: {
@@ -76,7 +88,7 @@
       try {
         const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=brl');
         const data = await response.json();
-        const price = data.bitcoin.brl;
+        const currentPrice = data.bitcoin.brl;
         const now = new Date().toLocaleTimeString();
 
         if (bitcoinChart.data.labels.length > 20) {
@@ -85,12 +97,55 @@
         }
 
         bitcoinChart.data.labels.push(now);
-        bitcoinChart.data.datasets[0].data.push(price);
-        bitcoinChart.update();
+        bitcoinChart.data.datasets[0].data.push(currentPrice);
 
+        if (previousPrice !== null) {
+          if (currentPrice > previousPrice) {
+            bitcoinChart.data.datasets[0].borderColor = 'rgba(0, 255, 0, 1)';
+            bitcoinChart.data.datasets[0].backgroundColor = 'rgba(0, 255, 0, 0.2)';
+          } else if (currentPrice < previousPrice) {
+            bitcoinChart.data.datasets[0].borderColor = 'rgba(255, 0, 0, 1)';
+            bitcoinChart.data.datasets[0].backgroundColor = 'rgba(255, 0, 0, 0.2)';
+          }
+        }
+        previousPrice = currentPrice;
+
+        bitcoinChart.update();
+        updatePriceInfo(currentPrice);
         startCountdown(30);
       } catch (error) {
         console.error('Erro ao buscar o preço do Bitcoin:', error);
+      }
+    }
+
+    async function fetchSevenDaysAgoPrice() {
+      try {
+        const today = new Date();
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(today.getDate() - 7);
+        const dateString = `${('0' + sevenDaysAgo.getDate()).slice(-2)}-${('0' + (sevenDaysAgo.getMonth() + 1)).slice(-2)}-${sevenDaysAgo.getFullYear()}`;
+
+        const response = await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/history?date=${dateString}`);
+        const data = await response.json();
+        sevenDaysAgoPrice = data.market_data.current_price.brl;
+      } catch (error) {
+        console.error('Erro ao buscar o preço de 7 dias atrás:', error);
+      }
+    }
+
+    function updatePriceInfo(currentPrice) {
+      if (sevenDaysAgoPrice !== null) {
+        const priceDiff = currentPrice - sevenDaysAgoPrice;
+        const priceDiffPercent = ((priceDiff / sevenDaysAgoPrice) * 100).toFixed(2);
+        const priceInfoDiv = document.getElementById('priceInfo');
+
+        priceInfoDiv.innerHTML = `
+          Preço atual: R$ ${currentPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>
+          Preço há 7 dias: R$ ${sevenDaysAgoPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>
+          Variação: <span class="${priceDiff >= 0 ? 'price-up' : 'price-down'}">
+            ${priceDiffPercent}% ${priceDiff >= 0 ? '↑' : '↓'}
+          </span>
+        `;
       }
     }
 
@@ -110,8 +165,8 @@
       }, 1000);
     }
 
-    setInterval(fetchBitcoinPrice, 30000); // Atualiza a cada 30 segundos
-    fetchBitcoinPrice();
+    setInterval(fetchBitcoinPrice, 30000);
+    fetchSevenDaysAgoPrice().then(fetchBitcoinPrice);
   </script>
 </body>
 </html>
