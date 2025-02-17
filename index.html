@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gráfico Bitcoin em Tempo Real</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+    canvas {
+      margin-top: 20px;
+    }
+    #countdown {
+      font-size: 20px;
+      margin-top: 10px;
+      color: #ffc107;
+    }
+  </style>
+</head>
+<body>
+  <h2>Preço do Bitcoin em Tempo Real</h2>
+  <div id="countdown">Próxima atualização em: 30s</div>
+  <canvas id="bitcoinChart"></canvas>
+
+  <script>
+    const ctx = document.getElementById('bitcoinChart').getContext('2d');
+    const bitcoinChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Preço do Bitcoin (BRL)',
+          data: [],
+          borderColor: 'rgba(255, 193, 7, 1)',
+          backgroundColor: 'rgba(255, 193, 7, 0.2)',
+          borderWidth: 2,
+          tension: 0.3,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: 'Preço do Bitcoin Atualizado Automaticamente',
+            color: '#fff'
+          },
+          legend: {
+            labels: {
+              color: '#fff'
+            }
+          }
+        },
+        scales: {
+          x: {
+            display: true,
+            title: { display: true, text: 'Tempo', color: '#fff' },
+            ticks: { color: '#fff' }
+          },
+          y: {
+            display: true,
+            title: { display: true, text: 'Preço (BRL)', color: '#fff' },
+            ticks: { color: '#fff' },
+            beginAtZero: false
+          }
+        }
+      }
+    });
+
+    async function fetchBitcoinPrice() {
+      try {
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=brl');
+        const data = await response.json();
+        const price = data.bitcoin.brl;
+        const now = new Date().toLocaleTimeString();
+
+        if (bitcoinChart.data.labels.length > 20) {
+          bitcoinChart.data.labels.shift();
+          bitcoinChart.data.datasets[0].data.shift();
+        }
+
+        bitcoinChart.data.labels.push(now);
+        bitcoinChart.data.datasets[0].data.push(price);
+        bitcoinChart.update();
+
+        startCountdown(30);
+      } catch (error) {
+        console.error('Erro ao buscar o preço do Bitcoin:', error);
+      }
+    }
+
+    let countdownTimer;
+
+    function startCountdown(seconds) {
+      clearInterval(countdownTimer);
+      let timeLeft = seconds;
+      document.getElementById('countdown').textContent = `Próxima atualização em: ${timeLeft}s`;
+
+      countdownTimer = setInterval(() => {
+        timeLeft -= 1;
+        document.getElementById('countdown').textContent = `Próxima atualização em: ${timeLeft}s`;
+        if (timeLeft <= 0) {
+          clearInterval(countdownTimer);
+        }
+      }, 1000);
+    }
+
+    setInterval(fetchBitcoinPrice, 30000); // Atualiza a cada 30 segundos
+    fetchBitcoinPrice();
+  </script>
+</body>
+</html>
