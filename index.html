@@ -19,9 +19,13 @@
       margin-top: 10px;
       color: #ffc107;
     }
-    #priceInfo {
+    #loading {
+      color: #fff;
+      font-size: 20px;
+      display: none;
+    }
+    #countdown {
       margin-top: 20px;
-      font-size: 18px;
     }
     .price-up {
       color: #0f0;
@@ -33,28 +37,47 @@
 </head>
 <body>
   <h2>Preço do Bitcoin em Tempo Real</h2>
-  <div id="priceInfo">Carregando informações...</div>
+  <div id="loading">Carregando dados...</div>
   <div id="countdown">Próxima atualização em: 30s</div>
   <canvas id="bitcoinChart"></canvas>
 
   <script>
     const ctx = document.getElementById('bitcoinChart').getContext('2d');
     let previousPrice = null;
-    let sevenDaysAgoPrice = null;
 
     const bitcoinChart = new Chart(ctx, {
       type: 'line',
       data: {
         labels: [],
-        datasets: [{
-          label: 'Preço do Bitcoin (BRL)',
-          data: [],
-          borderColor: 'rgba(255, 193, 7, 1)',
-          backgroundColor: 'rgba(255, 193, 7, 0.2)',
-          borderWidth: 2,
-          tension: 0.3,
-          fill: true,
-        }]
+        datasets: [
+          {
+            label: 'Preço do Bitcoin (BRL) - Valorização',
+            data: [],
+            borderColor: 'rgba(0, 255, 0, 1)', // Verde para valorização
+            backgroundColor: 'rgba(0, 255, 0, 0.2)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true,
+          },
+          {
+            label: 'Preço do Bitcoin (BRL) - Queda',
+            data: [],
+            borderColor: 'rgba(255, 0, 0, 1)', // Vermelho para queda
+            backgroundColor: 'rgba(255, 0, 0, 0.2)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true,
+          },
+          {
+            label: 'Preço do Bitcoin (BRL) - Estabilidade',
+            data: [],
+            borderColor: 'rgba(255, 193, 7, 1)', // Amarelo para estabilidade
+            backgroundColor: 'rgba(255, 193, 7, 0.2)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true,
+          }
+        ]
       },
       options: {
         responsive: true,
@@ -91,61 +114,52 @@
         const currentPrice = data.bitcoin.brl;
         const now = new Date().toLocaleTimeString();
 
+        // Atualiza os dados no gráfico
         if (bitcoinChart.data.labels.length > 20) {
           bitcoinChart.data.labels.shift();
           bitcoinChart.data.datasets[0].data.shift();
+          bitcoinChart.data.datasets[1].data.shift();
+          bitcoinChart.data.datasets[2].data.shift();
         }
 
         bitcoinChart.data.labels.push(now);
-        bitcoinChart.data.datasets[0].data.push(currentPrice);
+        bitcoinChart.data.datasets[0].data.push(currentPrice); // Valorização
+        bitcoinChart.data.datasets[1].data.push(currentPrice); // Queda
+        bitcoinChart.data.datasets[2].data.push(currentPrice); // Estabilidade
 
+        // Mudando cores conforme a tendência do preço
         if (previousPrice !== null) {
           if (currentPrice > previousPrice) {
-            bitcoinChart.data.datasets[0].borderColor = 'rgba(0, 255, 0, 1)';
-            bitcoinChart.data.datasets[0].backgroundColor = 'rgba(0, 255, 0, 0.2)';
+            bitcoinChart.data.datasets[0].data.push(currentPrice); // Atualiza valorização
+            bitcoinChart.data.datasets[1].data.push(null); // Remove a queda
+            bitcoinChart.data.datasets[2].data.push(null); // Remove a estabilidade
           } else if (currentPrice < previousPrice) {
-            bitcoinChart.data.datasets[0].borderColor = 'rgba(255, 0, 0, 1)';
-            bitcoinChart.data.datasets[0].backgroundColor = 'rgba(255, 0, 0, 0.2)';
+            bitcoinChart.data.datasets[1].data.push(currentPrice); // Atualiza queda
+            bitcoinChart.data.datasets[0].data.push(null); // Remove a valorização
+            bitcoinChart.data.datasets[2].data.push(null); // Remove a estabilidade
+          } else {
+            bitcoinChart.data.datasets[2].data.push(currentPrice); // Atualiza estabilidade
+            bitcoinChart.data.datasets[0].data.push(null); // Remove a valorização
+            bitcoinChart.data.datasets[1].data.push(null); // Remove a queda
           }
         }
-        previousPrice = currentPrice;
 
+        previousPrice = currentPrice;
         bitcoinChart.update();
-        updatePriceInfo(currentPrice);
+        updateLoading(false);
         startCountdown(30);
       } catch (error) {
         console.error('Erro ao buscar o preço do Bitcoin:', error);
+        updateLoading(false);
       }
     }
 
-    async function fetchSevenDaysAgoPrice() {
-      try {
-        const today = new Date();
-        const sevenDaysAgo = new Date(today);
-        sevenDaysAgo.setDate(today.getDate() - 7);
-        const dateString = `${('0' + sevenDaysAgo.getDate()).slice(-2)}-${('0' + (sevenDaysAgo.getMonth() + 1)).slice(-2)}-${sevenDaysAgo.getFullYear()}`;
-
-        const response = await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/history?date=${dateString}`);
-        const data = await response.json();
-        sevenDaysAgoPrice = data.market_data.current_price.brl;
-      } catch (error) {
-        console.error('Erro ao buscar o preço de 7 dias atrás:', error);
-      }
-    }
-
-    function updatePriceInfo(currentPrice) {
-      if (sevenDaysAgoPrice !== null) {
-        const priceDiff = currentPrice - sevenDaysAgoPrice;
-        const priceDiffPercent = ((priceDiff / sevenDaysAgoPrice) * 100).toFixed(2);
-        const priceInfoDiv = document.getElementById('priceInfo');
-
-        priceInfoDiv.innerHTML = `
-          Preço atual: R$ ${currentPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>
-          Preço há 7 dias: R$ ${sevenDaysAgoPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>
-          Variação: <span class="${priceDiff >= 0 ? 'price-up' : 'price-down'}">
-            ${priceDiffPercent}% ${priceDiff >= 0 ? '↑' : '↓'}
-          </span>
-        `;
+    function updateLoading(isLoading) {
+      const loadingDiv = document.getElementById('loading');
+      if (isLoading) {
+        loadingDiv.style.display = 'block';
+      } else {
+        loadingDiv.style.display = 'none';
       }
     }
 
@@ -165,8 +179,10 @@
       }, 1000);
     }
 
-    setInterval(fetchBitcoinPrice, 30000);
-    fetchSevenDaysAgoPrice().then(fetchBitcoinPrice);
+    // Carregamento inicial
+    updateLoading(true);
+    setInterval(fetchBitcoinPrice, 30000); // Atualiza a cada 30 segundos
+    fetchBitcoinPrice(); // Carrega na primeira vez
   </script>
 </body>
 </html>
