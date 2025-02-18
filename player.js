@@ -1,9 +1,6 @@
 // URL da lista M3U
 const m3uUrl = 'https://bit.ly/4eoenaV';
 
-// Inicializa o player
-const player = videojs('videoPlayer');
-
 // Função para carregar a lista M3U e extrair os canais
 async function loadM3U(url) {
     try {
@@ -43,8 +40,23 @@ function displayChannels(channels) {
 
 // Função para reproduzir o canal selecionado
 function playChannel(url) {
-    player.src({ src: url, type: 'application/x-mpegURL' });
-    player.play();
+    const video = document.getElementById('videoPlayer');
+
+    if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play();
+        });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = url;
+        video.addEventListener('loadedmetadata', () => {
+            video.play();
+        });
+    } else {
+        console.error('Este navegador não suporta HLS.');
+    }
 }
 
 // Carrega a lista M3U ao iniciar
