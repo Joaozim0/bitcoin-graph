@@ -1,14 +1,57 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #000;
-    color: #fff;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    margin: 0;
 }
+
+#container {
+    display: flex;
+    width: 90%;
+    max-width: 1200px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#channel-list {
+    width: 30%;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+#channel-list h2 {
+    margin-top: 0;
+}
+
+#channels {
+    list-style: none;
+    padding: 0;
+}
+
+#channels li {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+}
+
+#channels li:hover {
+    background-color: #f9f9f9;
+}
+
 #player-container {
-    width: 80%;
-    max-width: 800px;
+    width: 70%;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.video-js {
+    width: 100%;
+    height: auto;
 }
