@@ -1,4 +1,4 @@
-const m3uUrl = 'http://komprao24.com:80/get.php?username=454293497&password=47724087&type=m3u_plus'; // URL da lista M3U
+const m3uUrl = 'http://go7l99a.com:80/live/usa010/454025LG/643419.m3u8username=454293497&password=47724087&type=m3u_plus'; // URL da lista M3U
 
 async function loadM3U(url) {
   try {
