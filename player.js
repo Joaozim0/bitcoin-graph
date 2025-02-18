@@ -1,5 +1,5 @@
-// URL da lista M3U
-const m3uUrl = 'http://komprao24.com:80/get.php?username=454293497&password=47724087&type=m3u_plus';
+// URL encurtada da lista M3U
+const m3uUrl = 'https://bit.ly/4eoenaV';
 
 // Inicializa o player
 const player = videojs('videoPlayer');
@@ -11,8 +11,9 @@ async function loadM3U(url) {
         const data = await response.text();
         const lines = data.split('\n');
         for (let line of lines) {
-            if (line && !line.startsWith('#')) {
+            if (line && line.trim().startsWith('http')) {
                 player.src({ src: line.trim(), type: 'application/x-mpegURL' });
+                player.play();
                 break;
             }
         }
