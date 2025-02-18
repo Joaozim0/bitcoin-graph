@@ -1,23 +1,21 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Reprodutor HLS com hls.js</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <title>IPTV Player</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <div id="container">
-        <div id="channel-list">
-            <h2>Lista de Canais</h2>
-            <ul id="channels"></ul>
-        </div>
-        <div id="player-container">
-            <video id="videoPlayer" controls></video>
-        </div>
+  <div id="container">
+    <div id="channel-list">
+      <h2>Lista de Canais</h2>
+      <ul id="channels"></ul>
     </div>
-
-    <!-- Inclusão da biblioteca hls.js -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="player.js"></script>
+    <div id="player-container">
+      <video id="videoPlayer" controls></video>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="player.js"></script>
 </body>
 </html>
