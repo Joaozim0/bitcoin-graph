@@ -2,9 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Reprodutor IPTV</title>
-    <!-- Inclua o CSS do Video.js -->
-    <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+    <title>Reprodutor HLS com hls.js</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -14,16 +12,12 @@
             <ul id="channels"></ul>
         </div>
         <div id="player-container">
-            <video id="videoPlayer" class="video-js vjs-default-skin" controls preload="auto">
-                Seu navegador não suporta a reprodução de vídeo.
-            </video>
+            <video id="videoPlayer" controls></video>
         </div>
     </div>
 
-    <!-- Inclua o JavaScript do Video.js -->
-    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-    <!-- Inclua o plugin videojs-http-streaming -->
-    <script src="https://cdn.jsdelivr.net/npm/videojs-http-streaming@2.9.3/dist/videojs-http-streaming.min.js"></script>
+    <!-- Inclusão da biblioteca hls.js -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="player.js"></script>
 </body>
 </html>
