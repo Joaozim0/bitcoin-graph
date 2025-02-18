@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Player Torrent</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background-color: #f2f2f2;
+    }
+    input, button {
+      font-size: 1em;
+      padding: 8px;
+      margin: 5px 0;
+    }
+    video {
+      margin-top: 20px;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+  <h1>Player Torrent</h1>
+  <p>Insira o link do torrent (magnet link) abaixo:</p>
+  <input type="text" id="torrent-link" placeholder="Cole o link do torrent aqui" size="50">
+  <button id="play-button">Reproduzir</button>
+  <br>
+  <video id="video-player" controls width="600"></video>
+  
+  <!-- Carrega a biblioteca WebTorrent -->
+  <script src="https://cdn.jsdelivr.net/npm/webtorrent/webtorrent.min.js"></script>
+  <script>
+    const client = new WebTorrent();
+    const playButton = document.getElementById('play-button');
+    const torrentLinkInput = document.getElementById('torrent-link');
+    const videoPlayer = document.getElementById('video-player');
+
+    playButton.addEventListener('click', function() {
+      const torrentLink = torrentLinkInput.value.trim();
+      if (!torrentLink) {
+        alert('Por favor, insira um link válido.');
+        return;
+      }
+      
+      // Limpa qualquer vídeo anterior
+      videoPlayer.src = "";
+      
+      client.add(torrentLink, function(torrent) {
+        // Procura o primeiro arquivo de vídeo com formato compatível (ex.: .mp4, .webm, .mkv, .ogg)
+        const file = torrent.files.find(file => {
+          return file.name.endsWith('.mp4') ||
+                 file.name.endsWith('.webm') ||
+                 file.name.endsWith('.mkv') ||
+                 file.name.endsWith('.ogg');
+        });
+        
+        if (file) {
+          // Renderiza o vídeo no elemento <video>
+          file.renderTo(videoPlayer, {
+            autoplay: true,
+            controls: true
+          }, function (err) {
+            if (err) {
+              console.error('Erro ao renderizar o vídeo:', err);
+              alert('Erro ao renderizar o vídeo. Confira o console para detalhes.');
+            } else {
+              console.log('Vídeo renderizado com sucesso!');
+            }
+          });
+        } else {
+          alert('Nenhum arquivo de vídeo compatível encontrado no torrent.');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
