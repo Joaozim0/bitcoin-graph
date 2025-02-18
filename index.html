@@ -10,13 +10,14 @@
 <body>
     <div id="player-container">
         <video id="videoPlayer" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360">
-            <source src="" type="application/x-mpegURL">
             Seu navegador não suporta a reprodução de vídeo.
         </video>
     </div>
 
     <!-- Inclua o JavaScript do Video.js -->
     <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+    <!-- Inclua o plugin videojs-http-streaming -->
+    <script src="https://cdn.jsdelivr.net/npm/videojs-http-streaming@2.9.3/dist/videojs-http-streaming.min.js"></script>
     <script src="player.js"></script>
 </body>
 </html>
