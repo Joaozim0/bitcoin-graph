@@ -1,21 +1,113 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>IPTV Player</title>
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notícias de Futebol</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 15px;
+            font-size: 24px;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        .noticia {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: left;
+        }
+        .noticia img {
+            width: 100%;
+            border-radius: 5px;
+        }
+        .noticia h2 {
+            margin: 10px 0;
+            font-size: 20px;
+        }
+        .noticia p {
+            font-size: 16px;
+            color: #555;
+        }
+        .creditos {
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
 </head>
 <body>
-  <div id="container">
-    <div id="channel-list">
-      <h2>Lista de Canais</h2>
-      <ul id="channels"></ul>
-    </div>
-    <div id="player-container">
-      <video id="videoPlayer" controls></video>
-    </div>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <script src="player.js"></script>
+    <header>Notícias de Futebol Atualizadas</header>
+    <div class="container" id="noticias"></div>
+
+    <script>
+        const API_KEY = '5651983b7ecb4f99b0413071c000738e';
+        const LIBRETRANSLATE_URL = 'https://libretranslate.com/translate';
+
+        async function traduzirTexto(texto) {
+            try {
+                const resposta = await fetch(LIBRETRANSLATE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        q: texto,
+                        source: 'auto',
+                        target: 'pt',
+                        format: 'text'
+                    })
+                });
+                const dados = await resposta.json();
+                return dados.translatedText || texto;
+            } catch (erro) {
+                console.error('Erro ao traduzir:', erro);
+                return texto;
+            }
+        }
+
+        async function carregarNoticias() {
+            const url = `https://newsapi.org/v2/top-headlines?category=sports&language=en&apiKey=${API_KEY}`;
+            try {
+                const resposta = await fetch(url);
+                const dados = await resposta.json();
+                const noticiasDiv = document.getElementById('noticias');
+                noticiasDiv.innerHTML = '';
+
+                for (let noticia of dados.articles) {
+                    if (noticia.urlToImage && noticia.title && noticia.description) {
+                        const tituloTraduzido = await traduzirTexto(noticia.title);
+                        const descricaoTraduzida = await traduzirTexto(noticia.description);
+
+                        const noticiaHTML = `
+                            <div class="noticia">
+                                <img src="${noticia.urlToImage}" alt="Imagem da notícia">
+                                <h2>${tituloTraduzido}</h2>
+                                <p>${descricaoTraduzida}</p>
+                                <p class="creditos">Fonte: <a href="${noticia.url}" target="_blank">${noticia.source.name}</a></p>
+                            </div>
+                        `;
+                        noticiasDiv.innerHTML += noticiaHTML;
+                    }
+                }
+            } catch (erro) {
+                console.error('Erro ao carregar notícias:', erro);
+            }
+        }
+
+        carregarNoticias();
+        setInterval(carregarNoticias, 60000); // Atualiza a cada 1 minuto
+    </script>
 </body>
 </html>
