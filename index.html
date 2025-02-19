@@ -50,12 +50,14 @@
     </style>
 </head>
 <body>
-    <header>Notícias de Futebol Atualizadas</header>
+    <header>Notícias de Futebol 2025</header>
     <div class="container" id="noticias"></div>
 
     <script>
         const API_KEY = '5651983b7ecb4f99b0413071c000738e';
         const LIBRETRANSLATE_URL = 'https://libretranslate.com/translate';
+        const ANO_ATUAL = new Date().getFullYear();
+        const DATA_INICIAL = `${ANO_ATUAL}-01-01`; // Pega todas as notícias desde o início do ano
 
         async function traduzirTexto(texto) {
             try {
@@ -78,7 +80,7 @@
         }
 
         async function carregarNoticias() {
-            const url = `https://newsapi.org/v2/top-headlines?category=sports&language=en&apiKey=${API_KEY}`;
+            const url = `https://newsapi.org/v2/everything?q=futebol&from=${DATA_INICIAL}&sortBy=publishedAt&language=en&apiKey=${API_KEY}`;
             try {
                 const resposta = await fetch(url);
                 const dados = await resposta.json();
