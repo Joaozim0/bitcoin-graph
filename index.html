@@ -2,141 +2,89 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>IPTV Xtream Player com EPG</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASA APPS - IPTV Player</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js')
+            .then(() => console.log('Service Worker registrado!'))
+            .catch((error) => console.log('Service Worker erro:', error));
+    }
+    </script>
+
     <style>
         body {
-            margin: 0;
-            background: #000;
-            color: #fff;
+            background-color: #000;
+            color: white;
             font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            margin: 0;
+            padding: 0;
+            text-align: center;
         }
-        #canal-lista {
-            width: 90%;
-            max-width: 800px;
-            overflow-y: auto;
-            height: 300px;
-            margin-top: 20px;
-            background: #111;
-            padding: 10px;
+        #player {
+            width: 100%;
+            height: 70vh;
+            background: black;
         }
-        .canal {
+        #channelList {
+            margin-top: 10px;
+        }
+        button {
+            background: #1e90ff;
+            border: none;
             padding: 10px;
-            border-bottom: 1px solid #333;
+            color: white;
+            margin: 5px;
+            border-radius: 5px;
             cursor: pointer;
         }
-        .canal:hover {
-            background: #222;
-        }
-        video {
-            width: 90%;
-            max-width: 800px;
-            margin-top: 20px;
-            background: #333;
-        }
-        #epg {
-            width: 90%;
-            max-width: 800px;
-            margin-top: 20px;
-            background: #222;
-            padding: 10px;
-            text-align: left;
+        button:hover {
+            background: #63b3ed;
         }
     </style>
 </head>
 <body>
 
-    <h1>IPTV Xtream - BRAxBR</h1>
+    <h1>ASA APPS - Canais ao Vivo</h1>
 
-    <div id="canal-lista">Carregando canais...</div>
+    <video id="player" controls autoplay></video>
 
-    <video id="player" controls></video>
+    <div id="channelList">
+        <h3>Carregando canais...</h3>
+    </div>
 
-    <div id="epg">Selecione um canal para ver a programação.</div>
+<script>
+const username = 'Mariadefatimasandro';
+const password = 'Vshm2857';
+const server = 'http://braxbr.com:8080';
 
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script>
-        const servidor = 'http://braxbr.com:8080';
-        const usuario = 'Mariadefatimasandro';
-        const senha = 'Vshm2857';
+const channelListDiv = document.getElementById('channelList');
+const player = document.getElementById('player');
 
-        async function carregarCanais() {
-            const resposta = await fetch(`${servidor}/player_api.php?username=${usuario}&password=${senha}&action=get_live_streams`);
-            const canais = await resposta.json();
-
-            const listaDiv = document.getElementById('canal-lista');
-            listaDiv.innerHTML = '';
-
-            canais.forEach(canal => {
-                const div = document.createElement('div');
-                div.className = 'canal';
-                div.textContent = canal.name;
-                div.onclick = () => reproduzirCanal(canal.stream_id, canal.name);
-                listaDiv.appendChild(div);
-            });
-        }
-
-        function reproduzirCanal(streamId, nomeCanal) {
-            const url = `${servidor}/live/${usuario}/${senha}/${streamId}.m3u8`;
-            const video = document.getElementById('player');
-
-            if (Hls.isSupported()) {
-                const hls = new Hls();
-                hls.loadSource(url);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    video.play();
-                });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = url;
-                video.addEventListener('loadedmetadata', function() {
-                    video.play();
-                });
-            } else {
-                alert('Seu navegador não suporta HLS.');
-            }
-
-            carregarEPG(nomeCanal);
-        }
-
-        async function carregarEPG(nomeCanal) {
-            try {
-                const resposta = await fetch('http://braxbr.com/xmltv.php?username=Mariadefatimasandro&password=Vshm2857');
-                const xmlText = await resposta.text();
-                const parser = new DOMParser();
-                const xml = parser.parseFromString(xmlText, "application/xml");
-
-                const programas = xml.getElementsByTagName('programme');
-                const agora = new Date();
-                let epgAtual = "Programação não encontrada.";
-
-                for (let programa of programas) {
-                    const channel = programa.getAttribute('channel');
-                    const start = programa.getAttribute('start');
-                    const stop = programa.getAttribute('stop');
-
-                    const titulo = programa.getElementsByTagName('title')[0]?.textContent || 'Sem título';
-
-                    if (channel.includes(nomeCanal.replace(/\s/g, '').toLowerCase())) {
-                        const inicio = new Date(start.substring(0, 14));
-                        const fim = new Date(stop.substring(0, 14));
-                        if (agora >= inicio && agora <= fim) {
-                            epgAtual = `Agora: ${titulo}`;
-                            break;
-                        }
-                    }
-                }
-
-                document.getElementById('epg').innerText = epgAtual;
-            } catch (error) {
-                document.getElementById('epg').innerText = "Erro ao carregar EPG.";
-            }
-        }
-
-        carregarCanais();
-    </script>
+// Puxa a lista de canais
+fetch(`${server}/player_api.php?username=${username}&password=${password}&action=get_live_streams`)
+.then(response => response.json())
+.then(data => {
+    channelListDiv.innerHTML = '';
+    data.forEach(channel => {
+        const btn = document.createElement('button');
+        btn.textContent = channel.name;
+        btn.onclick = () => {
+            const streamUrl = `${server}/live/${username}/${password}/${channel.stream_id}.ts`;
+            player.src = streamUrl;
+            player.play();
+        };
+        channelListDiv.appendChild(btn);
+    });
+})
+.catch(error => {
+    channelListDiv.innerHTML = '<p>Erro ao carregar canais!</p>';
+    console.error(error);
+});
+</script>
 
 </body>
 </html>
