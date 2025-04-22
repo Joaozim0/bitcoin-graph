@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Canais</title>
+    <script>
+        const username = 'Mariadefatimasandro';
+        const password = 'Vshm2857';
+        const server = 'http://braxbr.com:8080';
+        
+        // Função para buscar canais do Xtream
+        function fetchChannels() {
+            fetch(`${server}/player_api.php?username=${username}&password=${password}&action=get_live_streams`)
+            .then(response => response.json())
+            .then(data => {
+                localStorage.setItem('channels', JSON.stringify(data)); // Salva os dados no localStorage
+                window.location.href = 'index.html'; // Redireciona para o index.html
+            })
+            .catch(error => {
+                alert('Erro ao carregar os canais!');
+                console.error(error);
+            });
+        }
+
+        // Executa a função assim que a página carregar
+        window.onload = fetchChannels;
+    </script>
+</head>
+<body>
+    <p>Carregando canais...</p>
+</body>
+</html>
