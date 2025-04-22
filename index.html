@@ -5,16 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASA APPS - IPTV Player</title>
 
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#000000">
-    <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js')
-            .then(() => console.log('Service Worker registrado!'))
-            .catch((error) => console.log('Service Worker erro:', error));
-    }
-    </script>
-
     <style>
         body {
             background-color: #000;
@@ -48,8 +38,7 @@
 </head>
 <body>
 
-    <h1>ASA APPS - Canais ao Vivo</h1>
-
+    <h1>ASA APPS - IPTV</h1>
     <video id="player" controls autoplay></video>
 
     <div id="channelList">
@@ -57,38 +46,29 @@
     </div>
 
 <script>
-const username = 'Mariadefatimasandro';
-const password = 'Vshm2857';
-const server = 'http://braxbr.com:8080';
+    const player = document.getElementById('player');
+    const channelListDiv = document.getElementById('channelList');
 
-const channelListDiv = document.getElementById('channelList');
-const player = document.getElementById('player');
+    // Carregar canais do localStorage
+    const channels = JSON.parse(localStorage.getItem('channels'));
 
-// Puxa a lista de canais via get.php
-fetch(`${server}/get.php?username=${username}&password=${password}&type=m3u_plus&output=json`)
-.then(response => response.json())
-.then(data => {
-    channelListDiv.innerHTML = '';
-
-    if (Array.isArray(data)) {
-        data.forEach(channel => {
+    if (channels && Array.isArray(channels)) {
+        channelListDiv.innerHTML = ''; // Limpa a mensagem "Carregando"
+        
+        // Lista os canais na tela
+        channels.forEach(channel => {
             const btn = document.createElement('button');
             btn.textContent = channel.name;
             btn.onclick = () => {
-                const streamUrl = `${server}/live/${username}/${password}/${channel.stream_id}.ts`;
+                const streamUrl = `http://braxbr.com:8080/live/Mariadefatimasandro/Vshm2857/${channel.stream_id}.ts`;
                 player.src = streamUrl;
                 player.play();
             };
             channelListDiv.appendChild(btn);
         });
     } else {
-        channelListDiv.innerHTML = '<p>Erro: formato inesperado de canais</p>';
+        channelListDiv.innerHTML = '<p>Erro ao carregar os canais!</p>';
     }
-})
-.catch(error => {
-    channelListDiv.innerHTML = '<p>Erro ao carregar canais!</p>';
-    console.error('Erro buscando canais:', error);
-});
 </script>
 
 </body>
