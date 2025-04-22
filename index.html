@@ -65,7 +65,7 @@ const channelListDiv = document.getElementById('channelList');
 const player = document.getElementById('player');
 
 // Puxa a lista de canais
-fetch(`${server}/player_api.php?username=${username}&password=${password}&action=get_live_streams`)
+fetchfetch(`${server}/get.php?username=${username}&password=${password}&type=m3u_plus&output=json`)
 .then(response => response.json())
 .then(data => {
     channelListDiv.innerHTML = '';
